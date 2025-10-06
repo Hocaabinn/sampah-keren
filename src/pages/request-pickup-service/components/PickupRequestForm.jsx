@@ -6,7 +6,7 @@ import Select from '../../../components/ui/Select';
 
 const PickupRequestForm = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
-    location: '',
+    name: '',
     address: '',
     date: '',
     timeSlot: '',
@@ -58,6 +58,9 @@ const PickupRequestForm = ({ onSubmit }) => {
   const validateForm = () => {
     const newErrors = {};
 
+    if (!formData?.name?.trim()) {
+      newErrors.name = 'Nama wajib diisi'; 
+    }
     if (!formData?.address?.trim()) {
       newErrors.address = 'Address is required';
     }
@@ -158,6 +161,16 @@ const PickupRequestForm = ({ onSubmit }) => {
           </h3>
           
           <Input
+            label="nama"
+            type="text"
+            placeholder="Enter your complete name"
+            value={formData?.name}
+            onChange={(e) => handleInputChange('name', e?.target?.value)}
+            error={errors?.name}
+            required
+            className="w-full"
+          />
+           <Input
             label="Alamat Lengkap Anda"
             type="text"
             placeholder="Enter your complete address"

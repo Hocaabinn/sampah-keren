@@ -176,9 +176,6 @@ const WasteReports = () => {
                 <Button variant="outline" onClick={() => setIsExportModalOpen(true)} iconName="Download">
                   Ekspor Laporan
                 </Button>
-                <Button onClick={handleNewReport} iconName="Plus">
-                  Buat Laporan Baru
-                </Button>
               </div>
             </div>
 

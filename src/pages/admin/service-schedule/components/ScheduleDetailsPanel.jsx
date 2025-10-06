@@ -112,15 +112,6 @@ const ScheduleDetailsPanel = ({
             <p className="text-sm text-muted-foreground mb-4">
             Tidak ada jadwal penjemputan untuk tanggal ini.
             </p>
-            <Button
-              variant="outline"
-              onClick={() => onCreateSchedule(selectedDate)}
-              iconName="Plus"
-              iconPosition="left"
-              iconSize={16}
-            >
-              + Buat Jadwal Pertama
-            </Button>
           </div>
         ) : (
           <div className="p-4 space-y-4">

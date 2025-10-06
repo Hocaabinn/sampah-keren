@@ -59,7 +59,7 @@ const WasteTypeSelector = ({ selectedType, onTypeChange, error }) => {
   const getTypeIcon = (type) => {
     const iconMap = {
       'Pembuangan Ilegal': 'AlertTriangle',
-      'overflowing-bins': 'Trash2',
+      'Tempat Sampah Penuh': 'Trash2',
       'hazardous-materials': 'Shield',
       'broken-glass': 'ShieldAlert',
       'electronic-waste': 'Monitor',
@@ -76,10 +76,11 @@ const WasteTypeSelector = ({ selectedType, onTypeChange, error }) => {
 
   return (
     <div className="space-y-4">
+      {/* ✅ Hanya satu Select — untuk waste_type */}
       <Select
-        label="Jenis Sampah"
+        label="Jenis Masalah Sampah"
         description="Pilih kategori yang paling sesuai untuk masalah sampah."
-        placeholder="Pilih jenis sampah..."
+        placeholder="Pilih jenis masalah..."
         options={wasteTypes}
         value={selectedType}
         onChange={onTypeChange}
@@ -87,6 +88,8 @@ const WasteTypeSelector = ({ selectedType, onTypeChange, error }) => {
         required
         searchable
       />
+
+      {/* Preview */}
       {selectedTypeData && (
         <div className="flex items-start space-x-3 p-4 bg-muted/30 rounded-lg border border-border">
           <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-md">
@@ -104,13 +107,15 @@ const WasteTypeSelector = ({ selectedType, onTypeChange, error }) => {
           </div>
         </div>
       )}
+
+      {/* Alert */}
       <div className="bg-warning/10 border border-warning/20 rounded-lg p-4">
         <div className="flex items-start space-x-2">
           <Icon name="Info" size={16} className="text-warning mt-0.5" />
           <div className="text-sm">
             <p className="font-medium text-warning">Penting</p>
             <p className="text-muted-foreground mt-1">
-            Untuk bahaya kesehatan langsung atau keadaan darurat, segera hubungi layanan darurat di 112
+              Untuk bahaya kesehatan langsung atau keadaan darurat, segera hubungi layanan darurat di 112
             </p>
           </div>
         </div>

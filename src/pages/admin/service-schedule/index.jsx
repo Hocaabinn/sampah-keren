@@ -295,15 +295,7 @@ const ServiceSchedule = () => {
               >
                 Jadwal Massal
               </Button>
-              <Button
-                variant="default"
-                onClick={() => handleCreateSchedule()}
-                iconName="Plus"
-                iconPosition="left"
-                iconSize={16}
-              >
-               Buat Jadwal
-              </Button>
+              
             </div>
           </div>
 

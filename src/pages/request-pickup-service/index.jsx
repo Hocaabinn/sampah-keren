@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo} from 'react';
 import NavigationHeader from '../../components/ui/NavigationHeader';
 import BreadcrumbTrail from '../../components/ui/BreadcrumbTrail';
 import PickupRequestForm from './components/PickupRequestForm';
@@ -8,118 +8,25 @@ import NearbyServices from './components/NearbyServices';
 import ServiceAvailability from './components/ServiceAvailability';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { supabase } from '../../lib/supabase';
 
 const RequestPickupService = () => {
   const [pickupRequests, setPickupRequests] = useState([]);
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-
+  const [loading, setLoading] = useState(true)
   // Mock data for pickup requests
-  const mockPickupRequests = [
-    {
-      id: 1001,
-      address: "123 Oak Street, Downtown District",
-      date: "2025-09-02",
-      timeSlot: "morning",
-      wasteType: "household",
-      quantity: "medium",
-      specialInstructions: "Please collect from side gate",
-      status: "scheduled",
-      requestDate: "2025-08-28T10:30:00Z",
-      estimatedPickup: "2025-09-02T09:00:00Z"
-    },
-    {
-      id: 1002,
-      address: "456 Pine Avenue, Residential Area",
-      date: "2025-08-25",
-      timeSlot: "afternoon",
-      wasteType: "recyclable",
-      quantity: "large",
-      specialInstructions: "",
-      status: "completed",
-      requestDate: "2025-08-20T14:15:00Z",
-      estimatedPickup: "2025-08-25T14:00:00Z"
-    },
-    {
-      id: 1003,
-      address: "789 Maple Drive, Suburb Heights",
-      date: "2025-08-30",
-      timeSlot: "evening",
-      wasteType: "bulk",
-      quantity: "bulk",
-      specialInstructions: "Old furniture - sofa and table",
-      status: "in-progress",
-      requestDate: "2025-08-26T16:45:00Z",
-      estimatedPickup: "2025-08-30T17:00:00Z"
-    },
-    {
-      id: 1004,
-      address: "321 Cedar Lane, Green Valley",
-      date: "2025-08-22",
-      timeSlot: "morning",
-      wasteType: "organic",
-      quantity: "small",
-      specialInstructions: "",
-      status: "completed",
-      requestDate: "2025-08-18T09:20:00Z",
-      estimatedPickup: "2025-08-22T10:30:00Z"
-    }
-  ];
+  
 
   // Mock data for upcoming pickups
-  const upcomingPickups = mockPickupRequests?.filter(request => 
-    request?.status === 'scheduled' || request?.status === 'in-progress'
-  );
+  const upcomingPickups = useMemo(() => {
+    return pickupRequests.filter(req => 
+      ['scheduled', 'in-progress'].includes(req.status)
+    );
+  }, [pickupRequests]);
 
   // Mock data for nearby services
-  const nearbyServices = [
-    {
-      id: 1,
-      name: "Central Recycling Center",
-      type: "recycling",
-      address: "100 Industrial Blvd, City Center",
-      distance: 2.3,
-      hours: { open: "08:00", close: "18:00" },
-      rating: 4.5,
-      reviews: 128,
-      phone: "(555) 123-4567",
-      acceptedWaste: ["Paper", "Plastic", "Glass", "Metal"]
-    },
-    {
-      id: 2,
-      name: "Community Drop-off Point",
-      type: "drop-off",
-      address: "45 Main Street, Downtown",
-      distance: 0.8,
-      hours: { open: "06:00", close: "22:00" },
-      rating: 4.2,
-      reviews: 89,
-      acceptedWaste: ["Household", "Small Electronics"]
-    },
-    {
-      id: 3,
-      name: "Hazardous Waste Facility",
-      type: "hazardous",
-      address: "200 Safety Drive, Industrial Zone",
-      distance: 5.1,
-      hours: { open: "09:00", close: "16:00" },
-      rating: 4.8,
-      reviews: 45,
-      phone: "(555) 987-6543",
-      acceptedWaste: ["Batteries", "Paint", "Chemicals", "Electronics"]
-    },
-    {
-      id: 4,
-      name: "Bulk Item Collection",
-      type: "bulk",
-      address: "75 Warehouse Road, South District",
-      distance: 3.7,
-      hours: { open: "07:00", close: "17:00" },
-      rating: 4.1,
-      reviews: 67,
-      acceptedWaste: ["Furniture", "Appliances", "Large Items"]
-    }
-  ];
+  const nearbyServices = [];
 
   // Mock data for service availability
   const serviceAvailability = {
@@ -166,20 +73,81 @@ const RequestPickupService = () => {
   };
 
   useEffect(() => {
-    setPickupRequests(mockPickupRequests);
+    console.log('🔥 useEffect dipanggil — mulai fetch data dari Supabase');
+    const fetchPickupRequests = async () => {
+      setLoading(true);
+      try {
+        console.log('📡 Mengirim request ke Supabase...');
+        const { data, error } = await supabase
+          .from('pickup_request')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error('❌ ERROR SUPABASE:', error);
+            alert(`Gagal muat data: ${error.message}`);
+            return;
+          }
+    
+
+        // Sesuaikan format data agar sesuai dengan ekspektasi komponen
+        const formattedData = data.map(req => ({
+          id: req.id,
+          name: req.name,
+          address: req.address,
+          date: req.pickup_date, // sesuaikan nama kolom
+          timeSlot: req.pickup_time,
+          wasteType: req.waste_type,
+          quantity: req.waste_quantity,
+          specialInstructions: req.intruksi || '',
+          status: req.status || 'scheduled',
+          requestDate: req.created_at,
+          estimatedPickup: req.pickup_date ? new Date(req.pickup_date).toISOString() : null
+        }));
+
+        setPickupRequests(formattedData);
+      } catch (err) {
+        console.error('Error fetching pickup requests:', err);
+        // Opsional: tampilkan error ke user
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPickupRequests();
   }, []);
 
-  const handleNewPickupRequest = (newRequest) => {
-    setPickupRequests(prev => [newRequest, ...prev]);
-    setShowSuccessMessage(true);
-    
-    // Hide success message after 5 seconds
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-    }, 5000);
+  const handleNewPickupRequest = async (newRequest) => {
+    try {
+      // Simpan ke Supabase
+      const { error } = await supabase
+        .from('pickup_request')
+        .insert([
+          {
+            name: newRequest.name,
+            address: newRequest.address,
+            pickup_date: newRequest.date,
+            pickup_time: newRequest.timeSlot,
+            waste_type: newRequest.wasteType,
+            waste_quantity: newRequest.quantity,
+            intruksi: newRequest.specialInstructions,
+            // created_at akan otomatis diisi oleh Supabase
+          }
+        ]);
 
-    // Scroll to top to show success message
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (error) throw error;
+
+      // Tambahkan ke state lokal (tanpa reload halaman)
+      setPickupRequests(prev => [newRequest, ...prev]);
+      setShowSuccessMessage(true);
+
+      setTimeout(() => setShowSuccessMessage(false), 5000);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (err) {
+      console.error('Gagal menyimpan ke Supabase:', err);
+      alert('Gagal menyimpan permintaan. Coba lagi.');
+    }
   };
 
   const handleViewAllHistory = () => {

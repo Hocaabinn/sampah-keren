@@ -109,8 +109,7 @@ const PickupHistory = ({ requests, onViewAll }) => {
           {displayRequests?.map((request) => (
             <div
               key={request?.id}
-              className="border border-border rounded-lg p-4 hover:shadow-subtle transition-smooth"
-            >
+              className="border border-border rounded-lg p-4 hover:shadow-subtle transition-smooth">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
@@ -129,7 +128,7 @@ const PickupHistory = ({ requests, onViewAll }) => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                     <div>
-                      <p className="text-sm font-medium text-foreground mb-1">Pickup Date</p>
+                      <p className="text-sm font-medium text-foreground mb-1">Pickup Data</p>
                       <p className="text-sm text-muted-foreground">
                         {formatDate(request?.date)} • {formatTime(request?.timeSlot)}
                       </p>
@@ -141,7 +140,6 @@ const PickupHistory = ({ requests, onViewAll }) => {
                       </p>
                     </div>
                   </div>
-
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Icon name="MapPin" size={14} />
                     <span className="truncate">{request?.address}</span>
@@ -159,6 +157,8 @@ const PickupHistory = ({ requests, onViewAll }) => {
                 </Button>
               </div>
 
+              
+
               {expandedRequest === request?.id && (
                 <div className="mt-4 pt-4 border-t border-border space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,6 +169,10 @@ const PickupHistory = ({ requests, onViewAll }) => {
                     <div>
                       <p className="text-sm font-medium text-foreground mb-1">Request ID</p>
                       <p className="text-sm text-muted-foreground font-mono">#{request?.id}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground mb-1">nama warga</p>
+                      <p className="text-sm text-muted-foreground font-mono">#{request?.name}</p>
                     </div>
                   </div>
                   
@@ -205,6 +209,7 @@ const PickupHistory = ({ requests, onViewAll }) => {
                 </div>
               )}
             </div>
+            
           ))}
         </div>
       )}

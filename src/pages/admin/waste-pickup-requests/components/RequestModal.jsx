@@ -20,6 +20,7 @@ const RequestModal = ({
     district: '',
     wasteType: '',
     priority: 'medium',
+    status: 'scheduled', // ✅ tambahkan status
     scheduledDate: '',
     scheduledTime: '',
     notes: '',
@@ -35,50 +36,13 @@ const RequestModal = ({
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (request && (mode === 'edit' || mode === 'view')) {
-      setFormData({
-        citizenName: request?.citizenName || '',
-        citizenPhone: request?.citizenPhone || '',
-        citizenEmail: request?.citizenEmail || '',
-        address: request?.address || '',
-        district: request?.district || '',
-        wasteType: request?.wasteType || '',
-        priority: request?.priority || 'medium',
-        scheduledDate: request?.scheduledDate || '',
-        scheduledTime: request?.scheduledTime || '',
-        notes: request?.notes || '',
-        specialInstructions: request?.specialInstructions || '',
-        estimatedWeight: request?.estimatedWeight || '',
-        accessInstructions: request?.accessInstructions || '',
-        contactPreference: request?.contactPreference || 'phone',
-        requiresSpecialEquipment: request?.requiresSpecialEquipment || false,
-        isRecurring: request?.isRecurring || false,
-        recurringFrequency: request?.recurringFrequency || ''
-      });
-    } else if (mode === 'create') {
-      setFormData({
-        citizenName: '',
-        citizenPhone: '',
-        citizenEmail: '',
-        address: '',
-        district: '',
-        wasteType: '',
-        priority: 'medium',
-        scheduledDate: '',
-        scheduledTime: '',
-        notes: '',
-        specialInstructions: '',
-        estimatedWeight: '',
-        accessInstructions: '',
-        contactPreference: 'phone',
-        requiresSpecialEquipment: false,
-        isRecurring: false,
-        recurringFrequency: ''
-      });
-    }
-    setErrors({});
-  }, [request, mode, isOpen]);
+  // ✅ Opsi status
+  const statusOptions = [
+    { value: 'scheduled', label: 'Scheduled' },
+    { value: 'in-progress', label: 'In Progress' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' }
+  ];
 
   const wasteTypeOptions = [
     { value: 'household', label: 'Household Waste' },
@@ -118,6 +82,53 @@ const RequestModal = ({
     { value: 'monthly', label: 'Monthly' }
   ];
 
+  useEffect(() => {
+    if (request && (mode === 'edit' || mode === 'view')) {
+      setFormData({
+        citizenName: request?.citizenName || '',
+        citizenPhone: request?.citizenPhone || '',
+        citizenEmail: request?.citizenEmail || '',
+        address: request?.address || '',
+        district: request?.district || '',
+        wasteType: request?.wasteType || '',
+        priority: request?.priority || 'medium',
+        status: request?.status || 'scheduled', // ✅ load status
+        scheduledDate: request?.scheduledDate || '',
+        scheduledTime: request?.scheduledTime || '',
+        notes: request?.notes || '',
+        specialInstructions: request?.specialInstructions || '',
+        estimatedWeight: request?.estimatedWeight || '',
+        accessInstructions: request?.accessInstructions || '',
+        contactPreference: request?.contactPreference || 'phone',
+        requiresSpecialEquipment: request?.requiresSpecialEquipment || false,
+        isRecurring: request?.isRecurring || false,
+        recurringFrequency: request?.recurringFrequency || ''
+      });
+    } else if (mode === 'create') {
+      setFormData({
+        citizenName: '',
+        citizenPhone: '',
+        citizenEmail: '',
+        address: '',
+        district: '',
+        wasteType: '',
+        priority: 'medium',
+        status: 'scheduled', // ✅ default
+        scheduledDate: '',
+        scheduledTime: '',
+        notes: '',
+        specialInstructions: '',
+        estimatedWeight: '',
+        accessInstructions: '',
+        contactPreference: 'phone',
+        requiresSpecialEquipment: false,
+        isRecurring: false,
+        recurringFrequency: ''
+      });
+    }
+    setErrors({});
+  }, [request, mode, isOpen]);
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors?.[field]) {
@@ -136,14 +147,6 @@ const RequestModal = ({
       newErrors.citizenPhone = 'Phone number is required';
     } else if (!/^\+?[\d\s-()]+$/?.test(formData?.citizenPhone)) {
       newErrors.citizenPhone = 'Please enter a valid phone number';
-    }
-
-    if (formData?.citizenEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/?.test(formData?.citizenEmail)) {
-      newErrors.citizenEmail = 'Please enter a valid email address';
-    }
-
-    if (!formData?.address?.trim()) {
-      newErrors.address = 'Address is required';
     }
 
     if (!formData?.district) {
@@ -203,7 +206,7 @@ const RequestModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-card border border-border rounded-lg shadow-modal w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-card border border-border rounded-lg shadow-modal w-full max-w-4xl h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-3">
@@ -228,9 +231,9 @@ const RequestModal = ({
           </Button>
         </div>
 
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Citizen Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -258,21 +261,19 @@ const RequestModal = ({
                   disabled={isReadOnly}
                   placeholder="+1 (555) 123-4567"
                 />
-                <Input
-                  label="Email Address"
-                  type="email"
-                  value={formData?.citizenEmail}
-                  onChange={(e) => handleInputChange('citizenEmail', e?.target?.value)}
-                  error={errors?.citizenEmail}
-                  disabled={isReadOnly}
-                  placeholder="citizen@email.com"
-                  description="Optional - for email notifications"
-                />
                 <Select
                   label="Contact Preference"
                   options={contactPreferenceOptions}
                   value={formData?.contactPreference}
                   onChange={(value) => handleInputChange('contactPreference', value)}
+                  disabled={isReadOnly}
+                />
+                {/* ✅ Status di sini (bisa dipindah ke bagian lain jika mau) */}
+                <Select
+                  label="Status"
+                  options={statusOptions}
+                  value={formData?.status}
+                  onChange={(value) => handleInputChange('status', value)}
                   disabled={isReadOnly}
                 />
               </div>
@@ -446,42 +447,42 @@ const RequestModal = ({
         </div>
 
         {/* Footer */}
-        {!isReadOnly && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-border bg-muted/30">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="default"
-              onClick={handleSubmit}
-              loading={isSubmitting}
-              iconName={mode === 'create' ? 'Plus' : 'Save'}
-              iconPosition="left"
-            >
-              {mode === 'create' ? 'Create Request' : 'Save Changes'}
-            </Button>
-          </div>
-        )}
-
-        {isReadOnly && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-border bg-muted/30">
-            <Button variant="outline" onClick={onClose}>
-              Close
-            </Button>
-            <Button
-              variant="default"
-              onClick={() => {/* Switch to edit mode */}}
-              iconName="Edit"
-              iconPosition="left"
-            >
-              Edit Request
-            </Button>
-          </div>
-        )}
+        <div className="border-t border-border bg-muted/30 p-6">
+          {!isReadOnly ? (
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleSubmit}
+                loading={isSubmitting}
+                iconName={mode === 'create' ? 'Plus' : 'Save'}
+                iconPosition="left"
+              >
+                {mode === 'create' ? 'Create Request' : 'Save Changes'}
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-end gap-3">
+              <Button variant="outline" onClick={onClose}>
+                Close
+              </Button>
+              <Button
+                variant="default"
+                onClick={() => {/* Switch to edit mode */}}
+                iconName="Edit"
+                iconPosition="left"
+              >
+                Edit Request
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
